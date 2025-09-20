@@ -1,0 +1,66 @@
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+import PageLayout from './components/PageLayout';
+import ActivityTracker from './components/ActivityTracker'; 
+import StudentResult from './pages/Exam/StudentResults';
+import AdminResult from './pages/Admin/AdminResults';
+import DynamicExam from './pages/Exam/DynamicExam';
+import TestsPage from './pages/Exam/TestsPage';
+import TestsList from './pages/Admin/TestsList';
+import TestManage from './pages/Admin/TestManage';
+import ExamMonitor from './pages/Admin/ExamMonitor';
+import ProtectedRoute from './ProtectedRoute';
+import LoadingPage from './pages/LoadingPage';
+import AdminMonitor from './pages/Admin/AdminMonitor';
+
+import Monitor from './Proctoring/Proctoring';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CoursesPage = lazy(() => import('./pages/CoursesPage'));
+const CoursePage = lazy(() => import('./pages/CoursePage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ProctoringPage = lazy(() => import('./Proctoring/Proctoring'));
+
+function App() {
+  return (
+    <BrowserRouter basename='/testhive'>
+      <ActivityTracker> 
+        <Toaster position="top-center" reverseOrder={false} />
+        <PageLayout>
+          <Suspense fallback={<LoadingPage message="Loading page, please wait..." />}>
+            <Routes>
+              <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><TestsList /></ProtectedRoute>} />
+              <Route path="/adminmonitor" element={<ProtectedRoute requireAdmin={true}><AdminMonitor /></ProtectedRoute>} />
+              <Route path="/testedit/:testId" element={<ProtectedRoute requireAdmin={true}><TestManage /></ProtectedRoute>} />
+
+              <Route path="/profile" element={<ProfilePage />} />
+      
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/proctoring" element={<ProtectedRoute requireUser={true}><ProctoringPage /></ProtectedRoute>} />
+              <Route path="*" element={<NotFoundPage />} />
+              <Route path="/" element={<HomePage />} />
+
+              <Route path="/face" element={<Monitor />} />
+
+              <Route path="/test" element={<ProtectedRoute requireUser={true}><TestsPage /></ProtectedRoute>} />
+              <Route path="/examwindow/:testid" element={<ProtectedRoute requireUser={true}><DynamicExam /></ProtectedRoute>} />
+              <Route path="/exammonitor/:testid" element={<ProtectedRoute requireAdmin={true}><ExamMonitor /></ProtectedRoute>} />
+              <Route path="/adminresults/:testid" element={<ProtectedRoute requireAdmin={true}><AdminResult /></ProtectedRoute>} />
+              <Route path="/studentresults/:testid" element={<ProtectedRoute requireUser={true}><StudentResult /></ProtectedRoute>} />
+            </Routes>
+          </Suspense>
+        </PageLayout>
+      </ActivityTracker>
+    </BrowserRouter>
+  );
+}
+
+export default App;
