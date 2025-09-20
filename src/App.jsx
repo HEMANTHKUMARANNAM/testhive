@@ -16,7 +16,8 @@ import LoadingPage from './pages/LoadingPage';
 import AdminMonitor from './pages/Admin/AdminMonitor';
 
 import Monitor from './Proctoring/Proctoring';
-
+import FullscreenTracker from './utils/Fullscreen';
+import { VideoProctor } from './pages/LiveProctoring/components/VideoProctor';
 const HomePage = lazy(() => import('./pages/HomePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -26,6 +27,8 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ProctoringPage = lazy(() => import('./Proctoring/Proctoring'));
+
+
 
 function App() {
   return (
@@ -48,7 +51,8 @@ function App() {
               <Route path="*" element={<NotFoundPage />} />
               <Route path="/" element={<HomePage />} />
 
-              <Route path="/face" element={<Monitor />} />
+              <Route path="/face" element={<VideoProctor />} />
+              <Route path="/screenTracker" element={<FullscreenTracker />} />
 
               <Route path="/test" element={<ProtectedRoute requireUser={true}><TestsPage /></ProtectedRoute>} />
               <Route path="/examwindow/:testid" element={<ProtectedRoute requireUser={true}><DynamicExam /></ProtectedRoute>} />

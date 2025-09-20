@@ -49,8 +49,10 @@ const Navbar = () => {
 
   const menuItems = [
     true && { label : "Home" , href : "/" },
-    true && user && { label: 'Tests', href: '/test' },
-    true && { label: 'Admin', href: '/admin' },
+    user?.email !== "hemanthkumar312004@gmail.com"  && { label: 'Tests', href: '/test' },
+    user?.email === "hemanthkumar312004@gmail.com" && { label: 'Admin', href: '/admin' },
+    true && { label: 'Video Proctoring', href: '/face' },
+    true && { label: 'Screen Tracker', href: '/screenTracker' },
   ].filter(Boolean); 
 
 

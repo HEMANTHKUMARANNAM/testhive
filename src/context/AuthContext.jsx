@@ -10,7 +10,7 @@ import { auth } from '../firebase'; // This now points to the second firebase co
 
 
 
-import { ref, set } from 'firebase/database';
+import { ref, set, onValue, onDisconnect, remove, update } from 'firebase/database';
 import { database } from '../firebase'; // Firebase configuration
 
 const AuthContext = createContext(null);
@@ -18,6 +18,13 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionEnforced, setSessionEnforced] = useState(true);
+
+  // session management refs
+  const sessionIdRef = React.useRef(null);
+  const sessionUnsubRef = React.useRef(null);
+  const heartbeatRef = React.useRef(null);
+  const sessionPathRef = React.useRef(null);
 
   useEffect(() => {
     console.log('Setting up auth state listener');
@@ -33,6 +40,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         console.log('No user found, setting user to null');
         setUser(null);
+        // cleanup session when no user
+        cleanupSessionListeners();
       }
       setLoading(false);
     });
@@ -42,6 +51,73 @@ export const AuthProvider = ({ children }) => {
       unsubscribe();
     };
   }, []);
+
+  // Initialize single-session enforcement when user changes
+  useEffect(() => {
+    if (!user?.uid || !sessionEnforced) return;
+
+    initSingleSession(user.uid);
+
+    return () => {
+      // component unmount or user switched
+      cleanupSessionListeners();
+    };
+  }, [user?.uid, sessionEnforced]);
+
+  const initSingleSession = async (uid) => {
+    try {
+      // Create or reuse a client session id
+      const newSessionId = window.crypto?.randomUUID ? window.crypto.randomUUID() : Math.random().toString(36).slice(2);
+      sessionIdRef.current = newSessionId;
+      sessionPathRef.current = `sessions/${uid}`;
+      const sRef = ref(database, sessionPathRef.current);
+
+      // Claim the session (this will override any previous session and cause other clients to logout)
+      await set(sRef, {
+        sessionId: newSessionId,
+        updatedAt: Date.now(),
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+      });
+
+      // Remove this session on disconnect
+      try {
+        await onDisconnect(sRef).remove();
+      } catch (e) {
+        console.warn('onDisconnect setup failed (non-fatal):', e);
+      }
+
+      // Listen for changes to the session; if it no longer matches, logout
+      sessionUnsubRef.current = onValue(sRef, (snap) => {
+        const val = snap.val();
+        if (!val) return; // path removed: ignore, likely disconnect cleanup
+        if (val.sessionId && val.sessionId !== sessionIdRef.current) {
+          // Another session took over
+          console.warn('Another session detected. Logging out this client.');
+          logout(true);
+        }
+      });
+
+      // Heartbeat to keep updatedAt fresh
+      heartbeatRef.current = window.setInterval(() => {
+        update(sRef, { updatedAt: Date.now() }).catch(() => {});
+      }, 20_000); // every 20s
+    } catch (e) {
+      console.error('Failed to initialize single-session enforcement:', e);
+    }
+  };
+
+  const cleanupSessionListeners = () => {
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
+    }
+    if (sessionUnsubRef.current) {
+      try { sessionUnsubRef.current(); } catch (_) {}
+      sessionUnsubRef.current = null;
+    }
+    sessionIdRef.current = null;
+    sessionPathRef.current = null;
+  };
 
   const googleSignIn = async () => {
     try {
@@ -59,10 +135,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (isAuto = false) => {
     try {
+      // Try to remove the session record
+      const uid = auth.currentUser?.uid || user?.uid;
+      if (uid) {
+        try {
+          await remove(ref(database, `sessions/${uid}`));
+        } catch (_) {}
+      }
+
+      cleanupSessionListeners();
       await firebaseSignOut(auth);
       setUser(null);
+      if (isAuto) {
+        // Optional: show a toast/banner; using alert for simplicity
+        // eslint-disable-next-line no-alert
+        alert('You have been logged out because your account was signed in from another device or tab.');
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }
