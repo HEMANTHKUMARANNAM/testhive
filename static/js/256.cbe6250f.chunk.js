@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkcoding_platform=self.webpackChunkcoding_platform||[]).push([[256],{5256:(t,a,e)=>{e.r(a),e.d(a,{default:()=>l});e(5043);var s=e(579);const l=()=>(0,s.jsxs)("div",{className:"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12",children:[(0,s.jsx)("h1",{className:"text-4xl font-bold text-gray-900 dark:text-white mb-4",children:"Contact Us"}),(0,s.jsx)("p",{className:"text-gray-600 dark:text-gray-300 text-lg",children:"For any inquiries, please reach out to us at contact@AlgoCore.com."})]})}}]);
+//# sourceMappingURL=256.cbe6250f.chunk.js.map
