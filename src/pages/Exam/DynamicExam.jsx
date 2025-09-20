@@ -371,6 +371,14 @@ const DynamicExam = () => {
 
   return (
     <div ref={containerRef} className="h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Hidden video element for camera stream (required by useVideoProctoring.startCamera) */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+      />
       {stage === "loading" && (
         <LoadingPage message="Loading exam, please wait..." />
       )}
