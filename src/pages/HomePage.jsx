@@ -88,7 +88,7 @@ function HomePage() {
               </button>
             )}
             <button
-              onClick={() => navigate('/exams')}
+              onClick={() => navigate('/test')}
               className="relative bg-white/90 backdrop-blur-sm text-purple-600 font-bold py-4 px-8 rounded-xl border-2 border-purple-200 hover:bg-purple-50 dark:bg-gray-800/90 dark:text-purple-400 dark:border-purple-400 dark:hover:bg-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto"
             >
               <span className="flex items-center gap-2">

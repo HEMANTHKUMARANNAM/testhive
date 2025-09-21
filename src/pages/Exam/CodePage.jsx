@@ -18,6 +18,8 @@ import AnimatedTestResults from '../AnimatedTestResults';
 import { executeCode } from '../api';
 import { useAuth } from '../../context/AuthContext';
 
+import { ToastContainer } from 'react-toastify';
+
 
 
 
@@ -727,6 +729,7 @@ function CodePage({ question }) {
           </div>
         </div>
         <div className="flex-1 bg-white dark:bg-gray-900 min-w-0 overflow-auto">
+          <ToastContainer />
           <Editor
             height="100%"
             defaultLanguage="cpp"
